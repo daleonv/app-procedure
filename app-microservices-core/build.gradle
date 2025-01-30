@@ -1,0 +1,27 @@
+dependencies {
+    api project(":app-microservices-client")
+
+    implementation 'com.ec.app.entities:app-entities'
+
+    // Context
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+
+    // Data
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'com.querydsl:querydsl-jpa'
+    implementation 'mysql:mysql-connector-java'
+
+    implementation 'org.hibernate:hibernate-core'
+    implementation 'org.hibernate:hibernate-entitymanager'
+
+    implementation 'javax.annotation:javax.annotation-api'
+
+    implementation 'org.mapstruct:mapstruct'
+    annotationProcessor "org.mapstruct:mapstruct-processor"
+    compileOnly 'javax.servlet:servlet-api'
+
+}
+
+jar {
+    enabled = true
+}

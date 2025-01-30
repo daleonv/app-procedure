@@ -1,0 +1,26 @@
+
+dependencies {
+
+    implementation 'com.ec.app.entities:app-entities'
+    api project(":app-microservices-vo")
+    compileOnly 'org.projectlombok:lombok'
+    compileOnly 'com.querydsl:querydsl-core'
+    implementation'com.querydsl:querydsl-jpa'
+    implementation 'javax.persistence:javax.persistence-api'
+    compileOnly 'javax.annotation:javax.annotation-api'
+    compileOnly 'javax.validation:validation-api'
+    compileOnly 'org.springframework.data:spring-data-commons'
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'org.springframework.ws:spring-ws-core'
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.mapstruct:mapstruct'
+    annotationProcessor "org.mapstruct:mapstruct-processor"
+
+    annotationProcessor(
+            "com.querydsl:querydsl-apt:${querydslVersion}:general",
+            "com.querydsl:querydsl-apt:${querydslVersion}:jpa",
+            'javax.persistence:javax.persistence-api',
+            'javax.annotation:javax.annotation-api',
+            'org.projectlombok:lombok'
+    )
+}

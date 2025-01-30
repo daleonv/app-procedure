@@ -1,0 +1,42 @@
+logging:
+  level:
+    org:
+      springframework:
+        web: INFO
+      hibernate: ERROR
+      keycloak: ERROR
+
+server:
+  port: 8082
+  servlet:
+    context-path: /procedure
+  max-http-header-size: 40KB
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    url: jdbc:mysql://localhost:3306/test_schema?useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    hikari:
+      connectionTimeout: 120000
+      idleTimeout: 120000
+      maxLifetime: 1800000
+  #      connectionTestQuery: SELECT 1
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+management:
+  security:
+    enabled: false

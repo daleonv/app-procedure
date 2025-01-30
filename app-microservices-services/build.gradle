@@ -1,0 +1,15 @@
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    api project(":app-microservices-vo")
+    api project(":app-microservices-core")
+
+    implementation 'com.ec.app.entities:app-entities'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+}
+
+jar {
+    enabled = false
+}
