@@ -3,6 +3,7 @@ package com.ec.app.microservices;
 import com.ec.app.microservices.config.BaseAppConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * @version 1.0
  */
 
+@EnableDiscoveryClient
 @Import({BaseAppConfiguration.class})
 @SpringBootApplication(scanBasePackages = {"com.ec.app"})
 @ComponentScan(basePackages = {"com.ec.app"})

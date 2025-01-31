@@ -30,6 +30,7 @@ public class TransactionRepository extends JPAQueryDslBaseRepository<Transaction
     @Override
     public List<TransactionEntity> findTransactionList() {
         return from(transactionEntity).select(Projections.bean(TransactionEntity.class,
+                                transactionEntity.transactionId,
                                 transactionEntity.date,
                                 transactionEntity.transactionType,
                                 transactionEntity.amount,
