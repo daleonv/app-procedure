@@ -6,9 +6,10 @@ import com.ec.app.microservices.AccountVo;
 import com.ec.app.microservices.repositories.IAccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,15 @@ public class AccountService implements IAccountService {
      * {@inheritDoc}
      */
     @Override
+    public AccountEntity findAccount(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void saveAccount(AccountVo account) {
         accountRepository.save(AccountEntity.builder()
                 .accountNumber(account.getAccountNumber())
@@ -58,10 +68,10 @@ public class AccountService implements IAccountService {
     public void updateAccount(AccountVo account) {
         Optional<AccountEntity> optionalAccount = accountRepository.findById(account.getAccountId());
         if (optionalAccount.isPresent()) {
-            AccountEntity existingAccount = getAccountEntity(account, optionalAccount);
+            AccountEntity existingAccount = getAccountEntity(account, optionalAccount.orElse(new AccountEntity()));
             accountRepository.update(existingAccount);
         } else {
-            throw new EntityNotFoundException("Account with ID " + account.getAccountId() + " not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -75,13 +85,12 @@ public class AccountService implements IAccountService {
     }
 
 
-    private static AccountEntity getAccountEntity(AccountVo account, Optional<AccountEntity> optionalAccount) {
-        AccountEntity existingAccount = optionalAccount.get();
-        existingAccount.setAccountNumber(account.getAccountNumber());
-        existingAccount.setAccountType(AccountEntity.AccountType.Ahorros);
-        existingAccount.setInitialBalance(account.getInitialBalance());
-        existingAccount.setStatus(account.getStatus());
-        existingAccount.setCustomer(CustomerEntity.builder().customerId(account.getCustomerId()).build());
-        return existingAccount;
+    private static AccountEntity getAccountEntity(AccountVo account, AccountEntity optionalAccount) {
+        optionalAccount.setAccountNumber(account.getAccountNumber());
+        optionalAccount.setAccountType(AccountEntity.AccountType.Ahorros);
+        optionalAccount.setInitialBalance(account.getInitialBalance());
+        optionalAccount.setStatus(account.getStatus());
+        optionalAccount.setCustomer(CustomerEntity.builder().customerId(account.getCustomerId()).build());
+        return optionalAccount;
     }
 }

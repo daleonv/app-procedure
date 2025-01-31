@@ -21,6 +21,14 @@ public interface IAccountService {
     List<AccountEntity> findAccountList();
 
     /**
+     * Return account information
+     *
+     * @param accountId Long
+     * @return AccountEntity
+     */
+    AccountEntity findAccount(Long accountId);
+
+    /**
      * Save account
      *
      * @param account AccountVo

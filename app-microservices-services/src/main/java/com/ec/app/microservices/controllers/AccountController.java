@@ -36,7 +36,15 @@ public class AccountController {
                 .build(), HttpStatus.OK);
     }
 
-    @PostMapping("")
+    @GetMapping("/{accountId}")
+    public ResponseEntity<Response<AccountEntity>> findAccount(@PathVariable Long accountId) {
+        return new ResponseEntity<>(Response.<AccountEntity>builder()
+                .data(accountService.findAccount(accountId))
+                .code(HttpStatus.OK.value())
+                .build(), HttpStatus.OK);
+    }
+
+    @PostMapping("create")
     public ResponseEntity<Response<Void>> saveAccount(
             @RequestBody AccountVo account) throws IOException {
         accountService.saveAccount(account);
@@ -58,9 +66,12 @@ public class AccountController {
     }
 
     @DeleteMapping("/{accountId}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable Long accountId) {
+    public ResponseEntity<Response<Void>> deleteAccount(@PathVariable Long accountId) {
         accountService.deleteAccount(accountId);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(Response.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Eliminado con éxito")
+                .build(), HttpStatus.OK);
     }
 
 }

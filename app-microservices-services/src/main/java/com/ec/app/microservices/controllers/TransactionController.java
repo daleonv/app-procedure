@@ -36,7 +36,7 @@ public class TransactionController {
                 .build(), HttpStatus.OK);
     }
 
-    @PostMapping("")
+    @PostMapping("create")
     public ResponseEntity<Response<Void>> saveTransaction(
             @RequestBody TransactionVo transaction) throws IOException {
         String response = transactionService.saveTransaction(transaction);
@@ -58,9 +58,12 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{transactionId}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long transactionId) {
+    public ResponseEntity<Response<Void>> deleteTransaction(@PathVariable Long transactionId) {
         transactionService.deleteTransaction(transactionId);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(Response.<Void>builder()
+                .code(HttpStatus.OK.value())
+                .message("Eliminado con éxito")
+                .build(), HttpStatus.OK);
     }
 
 }

@@ -20,6 +20,8 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor"
     compileOnly 'javax.servlet:servlet-api'
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
 }
 
 jar {
