@@ -1,6 +1,8 @@
 package com.ec.app.microservices.repositories;
 
 import com.ec.app.entities.procedures.AccountEntity;
+import com.ec.app.entities.procedures.CustomerEntity;
+import com.ec.app.entities.procedures.QCustomerEntity;
 import com.ec.app.microservices.config.JPAQueryDslBaseRepository;
 import com.querydsl.core.types.Projections;
 import org.springframework.context.annotation.Lazy;
@@ -29,15 +31,21 @@ public class AccountRepository extends JPAQueryDslBaseRepository<AccountEntity> 
      */
     @Override
     public List<AccountEntity> findAccountList() {
+        QCustomerEntity customer = QCustomerEntity.customerEntity;
         return from(accountEntity).select(Projections.bean(AccountEntity.class,
                                 accountEntity.accountId,
                                 accountEntity.accountNumber,
                                 accountEntity.accountType,
                                 accountEntity.initialBalance,
-                                accountEntity.status
+                                accountEntity.status,
+                                Projections.bean(CustomerEntity.class,
+                                        customer.customerId,
+                                        customer.name
+                                ).as("customer")
                         )
                 )
-                .stream().toList();
+                .innerJoin(accountEntity.customer, customer)
+                .fetch();
     }
 
     /**
@@ -45,15 +53,22 @@ public class AccountRepository extends JPAQueryDslBaseRepository<AccountEntity> 
      */
     @Override
     public Optional<AccountEntity> findById(Long accountId) {
+        QCustomerEntity customer = QCustomerEntity.customerEntity;
         return from(accountEntity)
                 .where(accountEntity.accountId.eq(accountId))
                 .select(Projections.bean(AccountEntity.class,
-                        accountEntity.accountId,
-                        accountEntity.accountNumber,
-                        accountEntity.accountType,
-                        accountEntity.initialBalance,
-                        accountEntity.status
-                ))
+                                accountEntity.accountId,
+                                accountEntity.accountNumber,
+                                accountEntity.accountType,
+                                accountEntity.initialBalance,
+                                accountEntity.status,
+                                Projections.bean(CustomerEntity.class,
+                                        customer.customerId,
+                                        customer.name
+                                ).as("customer")
+                        )
+                )
+                .innerJoin(accountEntity.customer, customer)
                 .stream().findFirst();
     }
 

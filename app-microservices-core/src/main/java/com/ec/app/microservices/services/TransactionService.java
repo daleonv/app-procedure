@@ -7,10 +7,12 @@ import com.ec.app.microservices.repositories.IAccountRepository;
 import com.ec.app.microservices.repositories.ITransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,31 +48,53 @@ public class TransactionService implements ITransactionService {
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public String saveTransaction(TransactionVo transaction) {
         Optional<AccountEntity> optionalAccount = accountRepository.findById(transaction.getAccountId());
+        List<TransactionEntity> transactionList = this.findTransactionList();
+
         if (optionalAccount.isPresent()) {
-            double balance;
-            if (transaction.getTransactionType().equals("Deposito")) {
-                balance = optionalAccount.get().getInitialBalance() + transaction.getAmount();
+            Optional<TransactionEntity> latestTransaction = transactionList.stream()
+                    .filter(t -> t.getAccount().getAccountId().equals(optionalAccount.get().getAccountId()))
+                    .max(Comparator.comparing(TransactionEntity::getDate));
+
+            AccountEntity account = optionalAccount.get();
+            double newBalance;
+
+            if (latestTransaction.isPresent()) {
+                if (transaction.getTransactionType().equals("Deposito")) {
+                    newBalance = latestTransaction.get().getBalance() + transaction.getAmount();
+                } else {
+                    newBalance = latestTransaction.get().getBalance() - transaction.getAmount();
+                    if (newBalance < 0) {
+                        return "2";
+                    }
+                }
             } else {
-                balance = optionalAccount.get().getInitialBalance() - transaction.getAmount();
+                if (transaction.getTransactionType().equals("Deposito")) {
+                    newBalance = account.getInitialBalance() + transaction.getAmount();
+                } else {
+                    newBalance = account.getInitialBalance() - transaction.getAmount();
+                    if (newBalance < 0) {
+                        return "2";
+                    }
+                }
             }
-            if (balance >= 0) {
-                optionalAccount.get().setInitialBalance(balance);
-                accountRepository.update(optionalAccount.get());
-                transactionRepository.save(TransactionEntity.builder()
-                        .date(transaction.getDate())
-                        .transactionType(TransactionEntity.TransactionType.Deposito)
-                        .amount(transaction.getAmount())
-                        .balance(balance)
-                        .account(AccountEntity.builder().accountId(transaction.getAccountId()).build())
-                        .status(transaction.getStatus())
-                        .build());
-                return "1";
-            }
-            return "2";
+
+            TransactionEntity transactionEntity = TransactionEntity.builder()
+                    .date(transaction.getDate())
+                    .transactionType(TransactionEntity.TransactionType.valueOf(transaction.getTransactionType()))
+                    .amount(transaction.getAmount())
+                    .balance(newBalance)
+                    .account(account)
+                    .status(transaction.getStatus())
+                    .build();
+
+            transactionRepository.save(transactionEntity);
+
+            return "1";
         }
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -80,10 +104,11 @@ public class TransactionService implements ITransactionService {
     public void updateTransaction(TransactionVo transaction) {
         Optional<TransactionEntity> optionalTransaction = transactionRepository.findById(transaction.getTransactionId());
         if (optionalTransaction.isPresent()) {
-            TransactionEntity existingTransaction = getTransactionEntity(transaction, optionalTransaction);
+            TransactionEntity existingTransaction = getTransactionEntity(transaction,
+                    optionalTransaction.orElse(new TransactionEntity()));
             transactionRepository.update(existingTransaction);
         } else {
-            throw new EntityNotFoundException("Transaction with ID " + transaction.getTransactionId() + " not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -97,14 +122,13 @@ public class TransactionService implements ITransactionService {
     }
 
 
-    private static TransactionEntity getTransactionEntity(TransactionVo transaction, Optional<TransactionEntity> optionalTransaction) {
-        TransactionEntity existingTransaction = optionalTransaction.get();
-        existingTransaction.setDate(transaction.getDate());
-        existingTransaction.setTransactionType(TransactionEntity.TransactionType.Deposito);
-        existingTransaction.setAmount(transaction.getAmount());
-        existingTransaction.setBalance(transaction.getBalance());
-        existingTransaction.setAccount(AccountEntity.builder().accountId(transaction.getAccountId()).build());
-        existingTransaction.setStatus(transaction.getStatus());
-        return existingTransaction;
+    private static TransactionEntity getTransactionEntity(TransactionVo transaction, TransactionEntity optionalTransaction) {
+        optionalTransaction.setDate(transaction.getDate());
+        optionalTransaction.setTransactionType(TransactionEntity.TransactionType.valueOf(transaction.getTransactionType()));
+        optionalTransaction.setAmount(transaction.getAmount());
+        optionalTransaction.setBalance(transaction.getBalance());
+        optionalTransaction.setAccount(AccountEntity.builder().accountId(transaction.getAccountId()).build());
+        optionalTransaction.setStatus(transaction.getStatus());
+        return optionalTransaction;
     }
 }

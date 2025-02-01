@@ -54,7 +54,7 @@ public class AccountService implements IAccountService {
     public void saveAccount(AccountVo account) {
         accountRepository.save(AccountEntity.builder()
                 .accountNumber(account.getAccountNumber())
-                .accountType(AccountEntity.AccountType.Ahorros)
+                .accountType(AccountEntity.AccountType.valueOf(account.getAccountType()))
                 .initialBalance(account.getInitialBalance())
                 .status(account.getStatus())
                 .customer(CustomerEntity.builder().customerId(account.getCustomerId()).build())
@@ -87,7 +87,7 @@ public class AccountService implements IAccountService {
 
     private static AccountEntity getAccountEntity(AccountVo account, AccountEntity optionalAccount) {
         optionalAccount.setAccountNumber(account.getAccountNumber());
-        optionalAccount.setAccountType(AccountEntity.AccountType.Ahorros);
+        optionalAccount.setAccountType(AccountEntity.AccountType.valueOf(account.getAccountType()));
         optionalAccount.setInitialBalance(account.getInitialBalance());
         optionalAccount.setStatus(account.getStatus());
         optionalAccount.setCustomer(CustomerEntity.builder().customerId(account.getCustomerId()).build());

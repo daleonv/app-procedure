@@ -1,5 +1,7 @@
 package com.ec.app.microservices.repositories;
 
+import com.ec.app.entities.procedures.AccountEntity;
+import com.ec.app.entities.procedures.QAccountEntity;
 import com.ec.app.entities.procedures.TransactionEntity;
 import com.ec.app.microservices.config.JPAQueryDslBaseRepository;
 import com.querydsl.core.types.Projections;
@@ -29,17 +31,24 @@ public class TransactionRepository extends JPAQueryDslBaseRepository<Transaction
      */
     @Override
     public List<TransactionEntity> findTransactionList() {
+        QAccountEntity account = QAccountEntity.accountEntity;
         return from(transactionEntity).select(Projections.bean(TransactionEntity.class,
                                 transactionEntity.transactionId,
                                 transactionEntity.date,
                                 transactionEntity.transactionType,
                                 transactionEntity.amount,
                                 transactionEntity.balance,
-                                transactionEntity.account.accountId,
+                                Projections.bean(AccountEntity.class,
+                                        account.accountId,
+                                        account.accountNumber,
+                                        account.accountType,
+                                        account.initialBalance
+                                ).as("account"),
                                 transactionEntity.status
                         )
                 )
-                .stream().toList();
+                .innerJoin(transactionEntity.account, account)
+                .fetch();
     }
 
     /**
@@ -54,7 +63,6 @@ public class TransactionRepository extends JPAQueryDslBaseRepository<Transaction
                         transactionEntity.transactionType,
                         transactionEntity.amount,
                         transactionEntity.balance,
-                        transactionEntity.account.accountId,
                         transactionEntity.status
                 ))
                 .stream().findFirst();
