@@ -7,7 +7,6 @@ logging:
       keycloak: ERROR
 
 server:
-  port: 8082
   servlet:
     context-path: /procedure
   max-http-header-size: 40KB
@@ -18,16 +17,10 @@ spring:
   profiles:
     active: dev
   datasource:
-    url: jdbc:mysql://host.docker.internal:3306/test_schema?useSSL=false&serverTimezone=UTC
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: root
     hikari:
       connectionTimeout: 120000
       idleTimeout: 120000
       maxLifetime: 1800000
-  #      connectionTestQuery: SELECT 1
-
   jpa:
     show-sql: false
     hibernate:
@@ -44,10 +37,6 @@ management:
     enabled: false
 
 eureka:
-  instance:
-    hostname: host.docker.internal
   client:
     register-with-eureka: true
     fetch-registry: true
-    service-url:
-      default-zone: http://host.docker.internal:8761/eureka/

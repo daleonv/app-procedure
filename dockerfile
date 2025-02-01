@@ -19,5 +19,8 @@ WORKDIR /api
 # Copia el archivo JAR generado al contenedor
 COPY app-microservices-services/build/libs/*.jar /api/app.jar
 
+# Definir la variable de entorno por defecto
+ENV SPRING_PROFILES_ACTIVE=docker
+
 # Ejecuta la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]
