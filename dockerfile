@@ -11,7 +11,7 @@ ENV TZ=America/Guayaquil
 ENV LANG C.UTF-8
 
 # Expone el puerto en el que la aplicación escucha
-EXPOSE 8081
+EXPOSE 8082
 
 # Establece el directorio de trabajo
 WORKDIR /api

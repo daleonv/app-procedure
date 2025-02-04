@@ -13,7 +13,7 @@ server:
 
 spring:
   application:
-    name: app-procedure
+    name: msvc-procedure
   profiles:
     active: dev
   datasource:
