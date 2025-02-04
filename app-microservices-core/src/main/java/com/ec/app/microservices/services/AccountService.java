@@ -81,7 +81,11 @@ public class AccountService implements IAccountService {
     @Override
     public void deleteAccount(Long accountId) {
         Optional<AccountEntity> optionalAccount = accountRepository.findById(accountId);
-        optionalAccount.ifPresent(account -> accountRepository.delete(account));
+        if (optionalAccount.isPresent()) {
+            optionalAccount.ifPresent(account -> accountRepository.delete(account));
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
 

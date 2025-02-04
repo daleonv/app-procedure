@@ -118,7 +118,11 @@ public class TransactionService implements ITransactionService {
     @Override
     public void deleteTransaction(Long transactionId) {
         Optional<TransactionEntity> optionalTransaction = transactionRepository.findById(transactionId);
-        optionalTransaction.ifPresent(transaction -> transactionRepository.delete(transaction));
+        if (optionalTransaction.isPresent()) {
+            optionalTransaction.ifPresent(transaction -> transactionRepository.delete(transaction));
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
     }
 
 
