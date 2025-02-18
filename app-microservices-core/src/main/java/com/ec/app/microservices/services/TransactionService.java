@@ -3,6 +3,8 @@ package com.ec.app.microservices.services;
 import com.ec.app.entities.procedures.AccountEntity;
 import com.ec.app.entities.procedures.TransactionEntity;
 import com.ec.app.microservices.TransactionVo;
+import com.ec.app.microservices.config.Response;
+import com.ec.app.microservices.constants.constants.ProcedureConstants;
 import com.ec.app.microservices.repositories.IAccountRepository;
 import com.ec.app.microservices.repositories.ITransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,57 +46,61 @@ public class TransactionService implements ITransactionService {
         return transactionRepository.findTransactionList();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    @Transactional
-    public String saveTransaction(TransactionVo transaction) {
-        Optional<AccountEntity> optionalAccount = accountRepository.findById(transaction.getAccountId());
+    public Response<String> saveTransaction(TransactionVo transaction) {
+        AccountEntity account = accountRepository.findById(transaction.getAccountId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        ProcedureConstants.ACCOUNT_NOT_FOUND));
+
+        double newBalance = calculateNewBalance(account, transaction);
+
+        if (newBalance < 0) {
+            return Response.<String>builder()
+                    .code(HttpStatus.BAD_REQUEST.value())
+                    .message(ProcedureConstants.INSUFFICIENT_FUNDS)
+                    .build();
+        }
+
+        saveTransactionEntity(transaction, account, newBalance);
+
+        return Response.<String>builder()
+                .code(HttpStatus.CREATED.value())
+                .message(ProcedureConstants.CREATED_MESSAGE)
+                .build();
+    }
+
+    /**
+     * Calculate new balance
+     */
+    private double calculateNewBalance(AccountEntity account, TransactionVo transaction) {
         List<TransactionEntity> transactionList = this.findTransactionList();
 
-        if (optionalAccount.isPresent()) {
-            Optional<TransactionEntity> latestTransaction = transactionList.stream()
-                    .filter(t -> t.getAccount().getAccountId().equals(optionalAccount.get().getAccountId()))
-                    .max(Comparator.comparing(TransactionEntity::getDate));
+        Optional<TransactionEntity> latestTransaction = transactionList.stream()
+                .filter(t -> t.getAccount().getAccountId().equals(account.getAccountId()))
+                .max(Comparator.comparing(TransactionEntity::getDate));
 
-            AccountEntity account = optionalAccount.get();
-            double newBalance;
+        double previousBalance = latestTransaction.map(TransactionEntity::getBalance)
+                .orElse(account.getInitialBalance());
 
-            if (latestTransaction.isPresent()) {
-                if (transaction.getTransactionType().equals("Deposito")) {
-                    newBalance = latestTransaction.get().getBalance() + transaction.getAmount();
-                } else {
-                    newBalance = latestTransaction.get().getBalance() - transaction.getAmount();
-                    if (newBalance < 0) {
-                        return "2";
-                    }
-                }
-            } else {
-                if (transaction.getTransactionType().equals("Deposito")) {
-                    newBalance = account.getInitialBalance() + transaction.getAmount();
-                } else {
-                    newBalance = account.getInitialBalance() - transaction.getAmount();
-                    if (newBalance < 0) {
-                        return "2";
-                    }
-                }
-            }
+        return transaction.getTransactionType().equals(ProcedureConstants.DEPOSIT_TRANSACTION)
+                ? previousBalance + transaction.getAmount()
+                : previousBalance - transaction.getAmount();
+    }
 
-            TransactionEntity transactionEntity = TransactionEntity.builder()
-                    .date(transaction.getDate())
-                    .transactionType(TransactionEntity.TransactionType.valueOf(transaction.getTransactionType()))
-                    .amount(transaction.getAmount())
-                    .balance(newBalance)
-                    .account(account)
-                    .status(transaction.getStatus())
-                    .build();
+    /**
+     * Save transaction in database
+     */
+    private void saveTransactionEntity(TransactionVo transaction, AccountEntity account, double newBalance) {
+        TransactionEntity transactionEntity = TransactionEntity.builder()
+                .date(transaction.getDate())
+                .transactionType(TransactionEntity.TransactionType.valueOf(transaction.getTransactionType()))
+                .amount(transaction.getAmount())
+                .balance(newBalance)
+                .account(account)
+                .status(transaction.getStatus())
+                .build();
 
-            transactionRepository.save(transactionEntity);
-
-            return "1";
-        }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        transactionRepository.save(transactionEntity);
     }
 
     /**
@@ -125,7 +131,9 @@ public class TransactionService implements ITransactionService {
         }
     }
 
-
+    /**
+     * Get transaction entity
+     */
     private static TransactionEntity getTransactionEntity(TransactionVo transaction, TransactionEntity optionalTransaction) {
         optionalTransaction.setDate(transaction.getDate());
         optionalTransaction.setTransactionType(TransactionEntity.TransactionType.valueOf(transaction.getTransactionType()));

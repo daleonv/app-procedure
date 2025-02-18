@@ -3,6 +3,7 @@ package com.ec.app.microservices.controllers;
 import com.ec.app.entities.procedures.AccountEntity;
 import com.ec.app.microservices.AccountVo;
 import com.ec.app.microservices.config.Response;
+import com.ec.app.microservices.constants.constants.ProcedureConstants;
 import com.ec.app.microservices.services.IAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -50,7 +51,7 @@ public class AccountController {
         accountService.saveAccount(account);
         return new ResponseEntity<>(Response.<Void>builder()
                 .code(HttpStatus.CREATED.value())
-                .message("Creado con éxito")
+                .message(ProcedureConstants.CREATED_MESSAGE)
                 .build(), HttpStatus.CREATED);
     }
 
@@ -61,7 +62,7 @@ public class AccountController {
         accountService.updateAccount(account);
         return new ResponseEntity<>(Response.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Actualizado con éxito")
+                .message(ProcedureConstants.UPDATED_MESSAGE)
                 .build(), HttpStatus.OK);
     }
 
@@ -70,7 +71,7 @@ public class AccountController {
         accountService.deleteAccount(accountId);
         return new ResponseEntity<>(Response.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Eliminado con éxito")
+                .message(ProcedureConstants.DELETED_MESSAGE)
                 .build(), HttpStatus.OK);
     }
 

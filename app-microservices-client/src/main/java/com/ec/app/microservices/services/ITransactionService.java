@@ -2,13 +2,14 @@ package com.ec.app.microservices.services;
 
 import com.ec.app.entities.procedures.TransactionEntity;
 import com.ec.app.microservices.TransactionVo;
+import com.ec.app.microservices.config.Response;
 
 import java.util.List;
 
 /**
  * Service interface for transaction resources
  *
- * @author dalonv
+ * @author daleonv
  * @version 1.0
  */
 public interface ITransactionService {
@@ -24,9 +25,9 @@ public interface ITransactionService {
      * Save transaction
      *
      * @param transaction TransactionVo
-     * @return String
+     * @return Response<String>
      */
-    String saveTransaction(TransactionVo transaction);
+    Response<String> saveTransaction(TransactionVo transaction);
 
     /**
      * Update transaction information.

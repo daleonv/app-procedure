@@ -3,6 +3,7 @@ package com.ec.app.microservices.controllers;
 import com.ec.app.entities.procedures.TransactionEntity;
 import com.ec.app.microservices.TransactionVo;
 import com.ec.app.microservices.config.Response;
+import com.ec.app.microservices.constants.constants.ProcedureConstants;
 import com.ec.app.microservices.services.ITransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -37,13 +37,9 @@ public class TransactionController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<Response<Void>> saveTransaction(
-            @RequestBody TransactionVo transaction) throws IOException {
-        String response = transactionService.saveTransaction(transaction);
-        return new ResponseEntity<>(Response.<Void>builder()
-                .code(response.equals("1") ? HttpStatus.CREATED.value() : HttpStatus.BAD_REQUEST.value())
-                .message(response.equals("1") ? "Creado" : "No cuenta con los fondos suficientes")
-                .build(), response.equals("1") ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Response<String>> saveTransaction(@RequestBody TransactionVo transaction) {
+        Response<String> response = transactionService.saveTransaction(transaction);
+        return ResponseEntity.status(response.getCode()).body(response);
     }
 
     @PutMapping("/{transactionId}")
@@ -53,7 +49,7 @@ public class TransactionController {
         transactionService.updateTransaction(transaction);
         return new ResponseEntity<>(Response.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Actualizado con éxito")
+                .message(ProcedureConstants.UPDATED_MESSAGE)
                 .build(), HttpStatus.OK);
     }
 
@@ -62,7 +58,7 @@ public class TransactionController {
         transactionService.deleteTransaction(transactionId);
         return new ResponseEntity<>(Response.<Void>builder()
                 .code(HttpStatus.OK.value())
-                .message("Eliminado con éxito")
+                .message(ProcedureConstants.DELETED_MESSAGE)
                 .build(), HttpStatus.OK);
     }
 
